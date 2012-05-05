@@ -122,6 +122,7 @@ class SiriProxy::Connection < EventMachine::Connection
           @userassistant.last_ip=@clientip
           puts "[Authentification - SiriProxy] Registered Assistant Found "
           @user=$clientsDao.find_by_assistant(@userassistant) #find the user with that assistant
+          $user = @user
           if @user==nil #Incase this user doesnt exist!!!!!!! Bug or not complete transaction
             puts "[Authentification - SiriProxy] No client for Assistant [#{@loadedassistant}]  Found :-("
           else
@@ -235,7 +236,7 @@ class SiriProxy::Connection < EventMachine::Connection
           @userassistant.last_ip=@clientip
           puts "[Authentification - SiriProxy] Registered Assistant Found "
           @user=$clientsDao.find_by_assistant(@userassistant) #find the user with that assistant
-
+          $user = @user
           if @user==nil #Incase this user doesnt exist!!!!!!! Bug or not complete transaction
 
             puts "[Authentification - SiriProxy] No client for Assistant [#{@loadedassistant}]  Found :-("
