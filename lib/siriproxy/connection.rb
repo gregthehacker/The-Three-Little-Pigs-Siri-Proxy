@@ -125,7 +125,6 @@ class SiriProxy::Connection < EventMachine::Connection
           @userassistant.last_ip=@clientip
           puts "[Authentification - SiriProxy] Registered Assistant Found "
           @user=$clientsDao.find_by_assistant(@userassistant) #find the user with that assistant
-          $user = @user
           if @user==nil #Incase this user doesnt exist!!!!!!! Bug or not complete transaction
             puts "[Authentification - SiriProxy] No client for Assistant [#{@loadedassistant}]  Found :-("
           elsif @user.valid=='False' # Shouldn't ever be invalid on a 4S
@@ -134,6 +133,12 @@ class SiriProxy::Connection < EventMachine::Connection
             $assistantDao.updateassistant(@userassistant)
             puts "[Authentification - SiriProxy] Access Granted! -> Client name:[#{@user.fname}] nickname[#{@user.nickname}] appleid[#{@user.appleAccountid}] Connected "
           end
+		  if @user != nil
+			plugin_manager.user_assistant = @loadedassistant
+			plugin_manager.user_appleid = @user.appleAccountid
+			plugin_manager.user_name = @user.fname
+			plugin_manager.user_nickname = @user.nickname
+		  end
         end
 
 
@@ -241,7 +246,6 @@ class SiriProxy::Connection < EventMachine::Connection
           @userassistant.last_ip=@clientip
           puts "[Authentification - SiriProxy] Registered Assistant Found "
           @user=$clientsDao.find_by_assistant(@userassistant) #find the user with that assistant
-          $user = @user
           if @user==nil #Incase this user doesnt exist!!!!!!! Bug or not complete transaction
 
             puts "[Authentification - SiriProxy] No client for Assistant [#{@loadedassistant}]  Found :-("
@@ -260,7 +264,11 @@ class SiriProxy::Connection < EventMachine::Connection
             return false
 
           elsif @user.valid=='True' #if its valid!!!
-
+			plugin_manager.user_assistant = @loadedassistant
+			plugin_manager.user_appleid = @user.appleAccountid
+			plugin_manager.user_name = @user.fname
+			plugin_manager.user_nickname = @user.nickname
+		  
             @key=Key.new
             @available_keys=$keyDao.list4Skeys().count
 

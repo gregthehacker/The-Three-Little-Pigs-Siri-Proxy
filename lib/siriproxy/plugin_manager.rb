@@ -2,7 +2,7 @@ require 'cora'
 require 'pp'
 
 class SiriProxy::PluginManager < Cora
-  attr_accessor :plugins, :iphone_conn, :guzzoni_conn
+  attr_accessor :plugins, :iphone_conn, :guzzoni_conn, :user_assistant, :user_appleid, :user_name, :user_nickname
 
   def initialize()
     load_plugins()
