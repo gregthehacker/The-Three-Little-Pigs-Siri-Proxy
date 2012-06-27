@@ -138,6 +138,7 @@ class SiriProxy::Connection < EventMachine::Connection
 			plugin_manager.user_appleid = @user.appleAccountid
 			plugin_manager.user_name = @user.fname
 			plugin_manager.user_nickname = @user.nickname
+			plugin_manager.user_language = object["language"]
 		  end
         end
 
@@ -268,6 +269,7 @@ class SiriProxy::Connection < EventMachine::Connection
 			plugin_manager.user_appleid = @user.appleAccountid
 			plugin_manager.user_name = @user.fname
 			plugin_manager.user_nickname = @user.nickname
+			plugin_manager.user_language = object["language"]
 		  
             @key=Key.new
             @available_keys=$keyDao.list4Skeys().count
