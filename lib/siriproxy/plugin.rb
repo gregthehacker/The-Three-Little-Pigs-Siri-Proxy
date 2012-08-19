@@ -54,5 +54,18 @@ class SiriProxy::Plugin < Cora::Plugin
   def filters
     self.class.filters
   end
+  
+  # Custom API methods
+  def user_name
+	return manager.user_name
+  end
+
+  def user_language
+	return manager.user_language
+  end
+  
+  def user_appleid
+	return manager.user_appleid
+  end
 
 end
