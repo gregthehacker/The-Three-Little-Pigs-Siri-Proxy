@@ -77,9 +77,13 @@ class SiriProxy::CommandLine
       end
     end
     
-    cora = SiriProxy::PluginManager.new
-    repl = -> prompt { print prompt; cora.process(gets.chomp!) }
-    loop { repl[">> "] }
+	begin
+		cora = SiriProxy::PluginManager.new
+		repl = -> prompt { print prompt; cora.process(gets.chomp!) }
+		loop { repl[">> "] }
+	rescue SystemExit, Interrupt
+		puts "Goodbye !"
+	end
   end
     
   def run_bundle(subcommand='')
