@@ -105,6 +105,10 @@
 								$websiteproperties = 'Please enter a value for the hostname.';
 								$inputErrors[] = 'wp_hostname';
 							}
+							elseif(empty($_POST['wp_port'])) {
+								$websiteproperties = 'Please enter a value for the port.';
+								$inputErrors[] = 'wp_port';
+							}
 							elseif(empty($_POST['wp_gbEntries'])) {
 								$websiteproperties = 'Please enter a value for the maximum guestbook entries per page.';
 								$inputErrors[] = 'wp_gbEntries';
@@ -136,6 +140,10 @@
 							elseif(empty($_POST['wp_cEmail'])) {
 								$websiteproperties = 'Please enter a value for the contact email.';
 								$inputErrors[] = 'wp_cEmail';
+							}
+							elseif(!is_numeric($_POST['wp_port'])) {
+								$websiteproperties = 'Please enter a numeric value for the port.';
+								$inputErrors[] = 'wp_port';
 							}
 							elseif(@!eregi("^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$", $_POST['wp_cEmail'])) {
 								$websiteproperties = 'Please enter a valid email.';
@@ -235,6 +243,7 @@
 										  `assistantid` longtext NOT NULL,
 										  `speechid` longtext NOT NULL,
 										  `device_type` mediumtext NOT NULL,
+                                                                                  `device_OS` text NOT NULL,
 										  `date_created` datetime NOT NULL,
 										  `last_login` datetime NOT NULL,
 										  `last_ip` text NOT NULL,
@@ -252,9 +261,15 @@
 										  `apple_db_id` longtext NOT NULL,
 										  `apple_account_id` longtext NOT NULL,
 										  `valid` enum('False','True') NOT NULL DEFAULT 'True',
+										  `devicetype` mediumtext NOT NULL,
+										  `deviceOS` text NOT NULL,
 										  `date_added` datetime NOT NULL,
+										  `last_login` datetime NOT NULL,
+										  `last_ip` text NOT NULL,
 										  PRIMARY KEY (`id`)
 										) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+                                                                                
+                                                                                INSERT INTO `clients` VALUES ('1', 'NA', 'NA', 'NA', 'NA', 'False', 'NA', 'NA', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 'NA');
 
 										-- ----------------------------
 										--  Table structure for `config`
@@ -262,12 +277,12 @@
 										DROP TABLE IF EXISTS `config`;
 										CREATE TABLE `config` (
 										  `id` int(2) NOT NULL,
-										  `max_threads` int(5) unsigned NOT NULL DEFAULT '20',
-										  `max_connections` int(5) unsigned NOT NULL DEFAULT '30',
+										  `max_threads` int(5) unsigned NOT NULL DEFAULT '40',
+										  `max_connections` int(5) unsigned NOT NULL DEFAULT '50',
 										  `active_connections` int(100) unsigned NOT NULL DEFAULT '0',
-										  `max_keyload` int(5) unsigned NOT NULL DEFAULT '1200',
+										  `max_keyload` int(5) unsigned NOT NULL DEFAULT '1800',
 										  `keyload_dropdown` int(5) unsigned NOT NULL DEFAULT '600',
-										  `keyload_dropdown_interval` int(5) unsigned NOT NULL DEFAULT '900',
+										  `keyload_dropdown_interval` int(5) unsigned NOT NULL DEFAULT '600',
 										  PRIMARY KEY (`id`)
 										) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -351,7 +366,9 @@
 										  `expired` enum('False','True') NOT NULL DEFAULT 'False',
 										  `keyload` int(255) unsigned NOT NULL DEFAULT '0',
 										  `date_added` datetime NOT NULL,
+										  `last_used` datetime NOT NULL,
 										  `iPad3` enum('False','True') NOT NULL DEFAULT 'False',
+										  `client_apple_account_id` longtext NOT NULL,
 										  PRIMARY KEY (`id`)
 										) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
@@ -425,6 +442,10 @@
 
 															(	'hostname_or_ip',
 																'" . mysql_real_escape_string($_POST['wp_hostname']). "',
+																NOW()),
+																
+															(	'port',
+																'" . mysql_real_escape_string($_POST['wp_port']). "',
 																NOW()),
 
 															(	'max_gb_entries_per_page',
@@ -633,7 +654,7 @@
 			<body>
 			<h1>Installation The Three Little Pigs - Siri Proxy</h1>';
 			if($success == true) {
-				echo '<fieldset><legend><span>✓</span>Installation feedback</legend><div class="form-block">';
+				echo '<fieldset><legend><span>?</span>Installation feedback</legend><div class="form-block">';
 				if(empty($error)) {
 					echo '<p class="success">You have successfully installed the web interface.<br />Now please delete this file (install.php) to get started!</p>';
 				}
@@ -675,15 +696,15 @@
 					echo '
 					<label for="pc_threads">Max threads</label>
 					<input type="text" name="pc_threads" id="pc_threads" value="' . $_POST['pc_threads'] . '" />
-					<span class="tooltip">(Recommended: 20)</span>
+					<span class="tooltip">(Recommended: 40)</span>
 					
 					<label for="pc_maxCon">Max connections</label>
 					<input type="text" name="pc_maxCon" id="pc_maxCon" value="' . $_POST['pc_maxCon'] . '" />
-					<span class="tooltip">(Recommended: 30)</span>
+					<span class="tooltip">(Recommended: 50)</span>
 					
 					<label for="pc_maxKeyload">Max keyload</label>
 					<input type="text" name="pc_maxKeyload" id="pc_maxKeyload" value="' . $_POST['pc_maxKeyload'] . '" />
-					<span class="tooltip">(Recommended: 1200)</span>
+					<span class="tooltip">(Recommended: 1800)</span>
 					
 					<label for="pc_keyloadDropdown">Keyload dropdown</label>
 					<input type="text" name="pc_keyloadDropdown" id="pc_keyloadDropdown" value="' . $_POST['pc_keyloadDropdown'] . '" />
@@ -719,10 +740,14 @@
 					}
 					echo '
 					<label for="wp_hostname">Hostname or IP</label>
-					<input type="text" name="wp_hostname" id="wp_hostname" value="' . $_POST['admin_password'] . '" />
+					<input type="text" name="wp_hostname" id="wp_hostname" value="' . $_POST['wp_hostname'] . '" />
 					<span class="tooltip">(Where proxy is running on)</span>
 
-					<label for="dd">Guestbook entries per page</label>
+					<label for="wp_port">Port</label>
+					<input type="text" name="wp_port" id="wp_port" value="' . $_POST['wp_port'] . '" />
+					<span class="tooltip">(Default: 443)</span>
+
+					<label for="wp_gbEntries">Guestbook entries per page</label>
 					<input type="text" name="wp_gbEntries" id="wp_gbEntries" value="' . $_POST['wp_gbEntries'] . '" />
 					
 					<label for="wp_kEntries">Keys per page</label>
